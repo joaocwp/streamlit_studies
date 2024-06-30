@@ -18,7 +18,7 @@ def upload_file():
     if session.upload_btn_click:
         df = pd.read_csv(uploaded_file)
         dados.dados = df
-        blocks.create_df_block(dados.dados, uploaded_file.name)
+        blocks.create_df_block(uploaded_file.name)
 
 def check_for_bumps(bump_keys=None):
     if bump_keys is None:
@@ -30,25 +30,26 @@ def check_for_bumps(bump_keys=None):
         print('processing:', key)
         # breakpoint()
         bump_dict = session[key]
-        dataset = bump_dict['dataset']
+        # dataset = bump_dict['dataset']
         col = bump_dict['bump_column']
         val = bump_dict['bump_value']
+        status = bump_dict['status']
         mtm = bump_dict['mtm_column']
         mtm_orig = bump_dict['mtm_orig']
-        status = bump_dict['status']
         bump_name = bump_dict['bump_name']
-        print('to bump:', col)
-        print('value:', val)
         print('status:', status)
         if status:
-            # breakpoint()    
+            # breakpoint()
             bump_mtm = dados.resultado[mtm]
             dados.resultado[mtm] = mtm_orig
             session[bump_name] = bump_mtm
             dados.resultado[bump_name] = bump_mtm
             print('----------orig:',dados.resultado[mtm].head())
             print('----------bump:',dados.resultado[bump_name].head())
-        if not status:
+        elif not status:
+            print('to bump:', col)
+            print('value:', val)
+            # breakpoint()
             dados.dados[col] += val
             session[key]['status'] = True
 

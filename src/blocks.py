@@ -15,22 +15,27 @@ def init():
     bump_block()
 
 
-def create_df_block(dataframe, name='input'):
+def create_df_block(name='input'):
     block = Block(name=name.replace('.','_'))
     print('============creating:', block._name)
-    for col in dataframe:
-        block.add_output(name=col, value={'dataset': dataframe, 'column':col, 'value':dataframe[col]})
+    for col in dados.dados:
+        block.add_output(name=col, value={'dataset': dados.dados, 'column':col, 'value':dados.dados[col]})
     block.add_compute(df_block_func)
     global blocks
     blocks.append(block)
 
-def df_block_func(self):
-    # print('pre bump:', dados.dados.head(1))
-    utils.check_for_bumps()
-    for col in dados.dados:
-        self.set_interface(name=col, value={'dataset':dados.dados, 'column':col, 'value':dados.dados[col]})
-    # print('pos bump:', dados.dados.head(1))
 
+def df_block_func(self):
+    print('pre bump:', dados.dados.head(1))
+    utils.check_for_bumps()
+    print('pos bump:', dados.dados.head(1))
+    # breakpoint()
+    cols = [i for i in self._outputs]
+    for col in cols:#dados.dados:
+        try:
+            self.set_interface(name=col, value={'dataset':dados.dados, 'column':col, 'value':dados.dados[col]})
+        except:
+            print('Could not set interface for ', col)
 
 def result_block_func(self):
     dataset = self.get_interface(name='result')['dataset']
@@ -45,6 +50,7 @@ def result_block():
 
 
 def sum_func(self):
+    print('sunfunc')
     nome_saida = self._name
     dataset = self.get_interface(name='col1')['dataset']
     col1 = self.get_interface(name='col1')['column']
@@ -80,8 +86,7 @@ def bump_block_func(self):
     value = self.get_option(name='valor')
     value = float(value)
 
-    bump_key = f'bump_{nome_saida}'
-    
+    bump_key = f'bump_{nome_saida}'    
     if bump_key not in session:
         print('=======cache para bump:', bump_col)
         session[bump_key] = {'dataset':dataset,
@@ -92,8 +97,9 @@ def bump_block_func(self):
                                          'status': False,
                                          'bump_name': nome_saida,
                                          'mtm_bumped':mtm_col}
-        st.rerun()
-    print('===========compile bump result')
-    utils.check_for_bumps(bump_keys=[bump_key])
+    if session[bump_key]['status']:
+        # breakpoint()
+        print('===========compile bump result')
+        utils.check_for_bumps(bump_keys=[bump_key])
     # dados.resultado[f'bump_{mtm_col}'] = session[bump_key]['mtm_bumped']
     
