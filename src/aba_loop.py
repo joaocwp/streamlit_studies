@@ -1,51 +1,49 @@
+from Barfi import st_barfi, barfi_schemas, Block
 import streamlit as st
-import pandas as pd
-import numpy as np
-import utils
-import dados
+
 
 def run():
-    # Session State also supports attribute based syntax
-    if 'click_number' not in st.session_state:
-        st.session_state.click_number = 0
+    feed = Block(name='Feed')
+    feed.add_output()
+    def feed_func(self):
+        self.set_interface(name='Output 1', value=4)
+        print('Feed:', 4)
+    feed.add_compute(feed_func)
 
-    if 'result' not in st.session_state:
-        st.session_state.result = pd.DataFrame()
+    splitter = Block(name='Splitter')
+    splitter.add_input()
+    splitter.add_output()
+    splitter.add_output()
+    def splitter_func(self):
+        in_1 = self.get_interface(name='Input 1')
+        value = (in_1/2)
+        self.set_interface(name='Output 1', value=value)
+        self.set_interface(name='Output 2', value=value)
+    splitter.add_compute(splitter_func)
 
-    if 'unique_ids' not in st.session_state:
-        st.session_state.unique_ids = []
-    
-    if 'looping' not in st.session_state:
-        st.session_state.looping = False
-    
-    if 'click' not in st.session_state:
-        st.session_state.click = False
+    mixer = Block(name='Mixer')
+    mixer.add_input()
+    mixer.add_input()
+    mixer.add_output()
+    def mixer_func(self):
+        in_1 = self.get_interface(name='Input 1')
+        in_2 = self.get_interface(name='Input 2')
+        value = (in_1 + in_2)
+        self.set_interface(name='Output 1', value=value)
+    mixer.add_compute(mixer_func)
 
-    uploaded_file = st.file_uploader("Choose a file")
-    if uploaded_file is not None:
-        # Can be used wherever a "file-like" object is accepted:
-        df = pd.read_csv(uploaded_file)
-        st.write(df.head(1))
-        dados.df = df
+    result = Block(name='Result')
+    result.add_input()
+    def result_func(self):
+        in_1 = self.get_interface(name='Input 1')
+    result.add_compute(result_func)
 
-    st.write(f"loop: ", st.session_state.looping)
-    st.write(f"Número de clicadas: {st.session_state.click_number}")
+    load_schema = st.selectbox('Select a saved schema:', barfi_schemas())
 
-    click = st.button("Clicae")
+    compute_engine = st.checkbox('Activate barfi compute engine', value=False)
 
-    if st.session_state.click_number > 0:
-        st.dataframe(st.session_state.result)
+    barfi_result = st_barfi(base_blocks=[feed, result, mixer, splitter],
+                        compute_engine=compute_engine, load_schema=load_schema)
 
-    if not st.session_state.looping:
-        st.session_state.looping = st.button("loop")
-
-    if (st.session_state.looping) | click:
-        utils.add_click()
-        if st.session_state.click_number >= len(st.session_state.unique_ids):
-            st.write("Fim de jogo")
-            st.session_state.looping = False
-        st.rerun()
-
-
-if __name__ == '__main__':
-    run()
+    if barfi_result:
+        st.write(barfi_result)

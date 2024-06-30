@@ -1,115 +1,99 @@
 from barfi import Block
+import streamlit as st
 from streamlit import session_state as session
 import dados
+import utils
 
-feed = Block(name='Feed')
-feed.add_output()
-def feed_func(self):
-    self.set_interface(name='Output 1', value=4)
-feed.add_compute(feed_func)
+global blocks
+blocks = []
 
-splitter = Block(name='Splitter')
-splitter.add_input()
-splitter.add_output()
-splitter.add_output()
-def splitter_func(self):
-    in_1 = self.get_interface(name='Input 1')
-    value = (in_1/2)
-    self.set_interface(name='Output 1', value=value)
-    self.set_interface(name='Output 2', value=value)
-splitter.add_compute(splitter_func)
+def init():
+    global blocks
+    blocks = []
+    result_block()
+    sum_block()
+    bump_block()
 
-mixer = Block(name='Mixer')
-mixer.add_input()
-mixer.add_input()
-mixer.add_output()
-def mixer_func(self):
-    in_1 = self.get_interface(name='Input 1')
-    in_2 = self.get_interface(name='Input 2')
-    value = (in_1 + in_2)
-    self.set_interface(name='Output 1', value=value)
-mixer.add_compute(mixer_func)
 
-result = Block(name='Result')
-result.add_input()
-def result_func(self):
-    in_1 = self.get_interface(name='Input 1')
-result.add_compute(result_func)
+def create_df_block(dataframe, name='input'):
+    block = Block(name=name.replace('.','_'))
+    print('============creating:', block._name)
+    for col in dataframe:
+        block.add_output(name=col, value={'dataset': dataframe, 'column':col, 'value':dataframe[col]})
+    block.add_compute(df_block_func)
+    global blocks
+    blocks.append(block)
 
-process_blocks = [feed, result, mixer, splitter]
+def df_block_func(self):
+    # print('pre bump:', dados.dados.head(1))
+    utils.check_for_bumps()
+    for col in dados.dados:
+        self.set_interface(name=col, value={'dataset':dados.dados, 'column':col, 'value':dados.dados[col]})
+    # print('pos bump:', dados.dados.head(1))
 
-number_10 = Block(name='Number 10')
-number_10.add_output()
-def number_10_func(self):
-    self.set_interface(name='Output 1', value=10)
-number_10.add_compute(number_10_func)
 
-number_5 = Block(name='Number 5')
-number_5.add_output()
-def number_5_func(self):
-    self.set_interface(name='Output 1', value=5)
-number_5.add_compute(number_5_func)
+def result_block_func(self):
+    dataset = self.get_interface(name='result')['dataset']
+    dados.resultado = dataset
 
-subtraction = Block(name='Subtraction')
-subtraction.add_input()
-subtraction.add_input()
-subtraction.add_output()
-def subtraction_func(self):
-    in_1 = self.get_interface(name='Input 1')
-    in_2 = self.get_interface(name='Input 2')
-    value = in_1 - in_2
-    self.set_interface(name='Output 1', value=value)    
-subtraction.add_compute(subtraction_func)
+def result_block():
+    block = Block(name='result')
+    block.add_input(name='result')
+    block.add_compute(result_block_func)
+    global blocks
+    blocks.append(block)
 
-addition = Block(name='Addition')
-addition.add_input()
-addition.add_input()
-addition.add_output()
-def addition_func(self):
-    in_1 = self.get_interface(name='Input 1')
-    in_2 = self.get_interface(name='Input 2')
-    value = in_1 + in_2
-    self.set_interface(name='Output 1', value=value)    
-addition.add_compute(addition_func)
 
-multiplication = Block(name='Multiplication')
-multiplication.add_input()
-multiplication.add_input()
-multiplication.add_output()
-def multiplication_func(self):
-    in_1 = self.get_interface(name='Input 1')
-    in_2 = self.get_interface(name='Input 2')
-    value = in_1 * in_2
-    self.set_interface(name='Output 1', value=value)    
-multiplication.add_compute(multiplication_func)
+def sum_func(self):
+    nome_saida = self._name
+    dataset = self.get_interface(name='col1')['dataset']
+    col1 = self.get_interface(name='col1')['column']
+    col2 = self.get_interface(name='col2')['column']
+    dataset[nome_saida] = dataset[col1] + dataset[col2]
+    self.set_interface(name='result', value={'dataset': dataset,
+                                            'column':nome_saida,
+                                            'value':dataset[nome_saida]})
 
-division = Block(name='Addition')
-division.add_input()
-division.add_input()
-division.add_output()
-def division_func(self):
-    in_1 = self.get_interface(name='Input 1')
-    in_2 = self.get_interface(name='Input 2')
-    value = in_1 / in_2
-    self.set_interface(name='Output 1', value=value)    
-division.add_compute(division_func)
+def sum_block():
+    sum_block = Block(name='Soma')
+    sum_block.add_input(name='col1')
+    sum_block.add_input(name='col2')
+    sum_block.add_output(name='result')
+    sum_block.add_compute(sum_func)
+    global blocks
+    blocks.append(sum_block)
 
-dataframe = Block(name='dataframe')
-dataframe.add_output(name='out1')
-def dataframe_func(self):
-    print("Id:", session.id)
-    out = dados.dados.loc[dados.dados.id==session.id]
-    out = out['value'].sum()
-    print("df:", out)
-    self.set_interface(name='out1', value=out)
-dataframe.add_compute(dataframe_func)
+def bump_block():
+    block = Block(name='Bump')
+    block.add_input(name='bump col')
+    block.add_input(name='mtm col')
+    block.add_option(name='valor', type='number', value=0.1)
+    block.add_compute(bump_block_func)
+    global blocks
+    blocks.append(block)
 
-result = Block(name='Result')
-result.add_input()
-def result_func(self):
-    in_1 = self.get_interface(name='Input 1')
-    dados.raw = in_1
-    print(f"res: {dados.raw}")
-result.add_compute(result_func)
+def bump_block_func(self):
+    nome_saida = self._name
+    bump_col = self.get_interface(name='bump col')['column']
+    mtm_col = self.get_interface(name='mtm col')['column']
+    dataset = self.get_interface(name='bump col')['dataset']
+    value = self.get_option(name='valor')
+    value = float(value)
 
-math_blocks = [number_10, number_5, dataframe, result, addition, subtraction, multiplication, division]
+    bump_key = f'bump_{nome_saida}'
+    
+    if bump_key not in session:
+        print('=======cache para bump:', bump_col)
+        session[bump_key] = {'dataset':dataset,
+                                         'bump_column':bump_col,
+                                         'bump_value':value,
+                                         'mtm_column':mtm_col,
+                                         'mtm_orig':dataset[mtm_col],
+                                         'status': False,
+                                         'bump_name': nome_saida,
+                                         'mtm_bumped':mtm_col}
+        st.rerun()
+    print('===========compile bump result')
+    utils.check_for_bumps(bump_keys=[bump_key])
+    # dados.resultado[f'bump_{mtm_col}'] = session[bump_key]['mtm_bumped']
+    

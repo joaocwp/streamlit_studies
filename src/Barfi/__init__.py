@@ -86,6 +86,7 @@ def st_barfi(base_blocks: Union[List[Block], Dict], load_schema: str = None,
                                    key=key, default={'command': 'skip', 'editor_state': {}})
 
     if (_from_client['command'] == 'execute') | run:
+        print("Running compute engine")
         if compute_engine:
             _ce = ComputeEngine(blocks=base_blocks_list)
             _ce.add_editor_state(_from_client['editor_state'])
