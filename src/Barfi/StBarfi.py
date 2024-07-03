@@ -48,6 +48,7 @@ else:
 class StBarfi:
     def __init__(self, base_blocks: Union[List[Block], Dict], load_schema: str = None,
               compute_engine: bool = True, key=None):
+        print('starting barfi')
         self.key = key
         self.compute_engine = compute_engine
         if load_schema:

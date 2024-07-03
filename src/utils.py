@@ -11,7 +11,7 @@ def click():
 def upload_file():
     if 'upload_btn_click' not in session:
         session.upload_btn_click = False
-    uploaded_file = st.file_uploader("Choose a file")
+    uploaded_file = st.file_uploader("Choose a file", key='upload_file')
     if st.button('Upload'):
         click()
     
@@ -20,43 +20,60 @@ def upload_file():
         dados.dados = df
         blocks.create_df_block(uploaded_file.name)
 
-def check_for_bumps(bump_keys=None):
-    if bump_keys is None:
-        print('checking bumps...')
-        bump_keys = [i for i in session if 'bump_' in i]
-        print('keys:', bump_keys)
 
-    for key in bump_keys:
-        print('processing:', key)
-        # breakpoint()
-        bump_dict = session[key]
+def check_column_to_bump(bump_names=None):
+    # breakpoint()
+    if bump_names is None:
+        print('checking bumps...')
+        bump_names = [i for i in session['bump_dict']]
+        print('keys:', bump_names)
+    
+    for bump_name in bump_names:
+        print('processing:', bump_name)
+        bump_dict = session['bump_dict'][bump_name]
+        # dataset = bump_dict['dataset']
+        col = bump_dict['bump_column']
+        val = bump_dict['bump_value']
+        status = bump_dict['status']
+        order = (bump_dict['order'] == session['order_of_bumping'])
+        if not status and order:
+            print('to bump:', col)
+            print('value:', val)
+            dados.dados[col] += val
+            session['bump_dict'][bump_name]['status'] = True
+
+    
+def compile_bumps(bump_names=None):
+    if bump_names is None:
+        print('checking bumps...')
+        bump_names = [i for i in session['bump_dict']]
+        print('keys:', bump_names)
+    
+    for bump_name in bump_names:
+        print('processing:', bump_name)
+        bump_dict = session['bump_dict'][bump_name]
         # dataset = bump_dict['dataset']
         col = bump_dict['bump_column']
         val = bump_dict['bump_value']
         status = bump_dict['status']
         mtm = bump_dict['mtm_column']
         mtm_orig = bump_dict['mtm_orig']
-        bump_name = bump_dict['bump_name']
-        print('status:', status)
-        if status:
-            # breakpoint()
+        order = (bump_dict['order'] == session['order_of_bumping'])
+        if status and order:
             bump_mtm = dados.resultado[mtm]
             dados.resultado[mtm] = mtm_orig
-            session[bump_name] = bump_mtm
+            dados.dados[mtm] = mtm_orig
+            dados.dados[col] -= val
+            session['bump_dict'][bump_name] = bump_mtm
             dados.resultado[bump_name] = bump_mtm
             print('----------orig:',dados.resultado[mtm].head())
             print('----------bump:',dados.resultado[bump_name].head())
-        elif not status:
-            print('to bump:', col)
-            print('value:', val)
-            # breakpoint()
-            dados.dados[col] += val
-            session[key]['status'] = True
+            session['order_of_bumping'] += 1
 
 
 def clean_bumps():
     print("reseting bumps...")
-    bump_keys = [i for i in session if 'bump_' in i]
-    for key in bump_keys:
-        print('reseting', key)
-        del session[key]
+    if 'bump_dict' in session:
+        del session['bump_dict']
+    if 'order_of_bumping' in session:
+        del session['order_of_bumping']

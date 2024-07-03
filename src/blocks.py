@@ -27,7 +27,7 @@ def create_df_block(name='input'):
 
 def df_block_func(self):
     print('pre bump:', dados.dados.head(1))
-    utils.check_for_bumps()
+    utils.check_column_to_bump()
     print('pos bump:', dados.dados.head(1))
     # breakpoint()
     cols = [i for i in self._outputs]
@@ -37,9 +37,11 @@ def df_block_func(self):
         except:
             print('Could not set interface for ', col)
 
+
 def result_block_func(self):
     dataset = self.get_interface(name='result')['dataset']
     dados.resultado = dataset
+
 
 def result_block():
     block = Block(name='result')
@@ -60,6 +62,7 @@ def sum_func(self):
                                             'column':nome_saida,
                                             'value':dataset[nome_saida]})
 
+
 def sum_block():
     sum_block = Block(name='Soma')
     sum_block.add_input(name='col1')
@@ -69,14 +72,19 @@ def sum_block():
     global blocks
     blocks.append(sum_block)
 
+
 def bump_block():
+    if 'bump_dict' not in session:
+        session['bump_dict'] = {}
     block = Block(name='Bump')
     block.add_input(name='bump col')
     block.add_input(name='mtm col')
     block.add_option(name='valor', type='number', value=0.1)
+    block.add_option(name='ordem', type='integer', value=1)
     block.add_compute(bump_block_func)
     global blocks
     blocks.append(block)
+
 
 def bump_block_func(self):
     nome_saida = self._name
@@ -85,21 +93,27 @@ def bump_block_func(self):
     dataset = self.get_interface(name='bump col')['dataset']
     value = self.get_option(name='valor')
     value = float(value)
+    order = self.get_option(name='ordem')
+    order = int(order)
 
-    bump_key = f'bump_{nome_saida}'    
-    if bump_key not in session:
+    if 'order_of_bumping' not in session:
+        session['order_of_bumping'] = 1
+
+    bump_name = f'bump_{nome_saida}'
+    # breakpoint()
+    if bump_name not in session['bump_dict']:
         print('=======cache para bump:', bump_col)
-        session[bump_key] = {'dataset':dataset,
-                                         'bump_column':bump_col,
-                                         'bump_value':value,
-                                         'mtm_column':mtm_col,
-                                         'mtm_orig':dataset[mtm_col],
-                                         'status': False,
-                                         'bump_name': nome_saida,
-                                         'mtm_bumped':mtm_col}
-    if session[bump_key]['status']:
-        # breakpoint()
-        print('===========compile bump result')
-        utils.check_for_bumps(bump_keys=[bump_key])
-    # dados.resultado[f'bump_{mtm_col}'] = session[bump_key]['mtm_bumped']
+        session['bump_dict'][bump_name] = {'bump_column': bump_col,
+                                            'bump_value': value,
+                                            'mtm_column': mtm_col,
+                                            'mtm_orig': dataset[mtm_col],
+                                            'status': False,
+                                            'mtm_bumped': "Not bumped",
+                                            'order': order}
+        st.rerun()
+    
+
+    if session['bump_dict'][bump_name]['status']:
+        print('===========compiling bump result for', bump_name)
+        utils.compile_bumps(bump_names=[bump_name])
     

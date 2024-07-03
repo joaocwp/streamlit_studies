@@ -5,6 +5,7 @@ from streamlit import session_state as session
 import utils
 import blocks
 import dados
+import joblib
 
 
 def run():
@@ -15,16 +16,20 @@ def run():
 
     with barfi_ctn:
         print("========================Setup==========================")
-        bump_keys = ['init'] + [i for i in session if 'bump_' in i]
-        i = 0
         barfi = StBarfi(base_blocks=blocks.blocks, compute_engine=True,
                     load_schema=barfi_schema_name, key='barfi')
-        while i < len(bump_keys):
-            barfi.run_barfi(run=True)
-            bump_keys = ['init'] + [i for i in session if 'bump_' in i]
-            print(f'{i} --------------- {bump_keys[i]}')
-            i += 1
-
+    if st.button('Save pkl', key='save_btn'):
+        joblib.dump(barfi, 'barfi.pkl')
     utils.clean_bumps()
+
     st.write(dados.resultado)
+
+    # if st.button('load pkl', key='load_btn'):
+    #     breakpoint()
+    #     barfi = joblib.load('barfi.pkl')
+    #     print('dados:',dados.resultado.head(2))
+    #     barfi.run_barfi(run=True)
+    #     print('dados pos run:',dados.resultado.head(2))
+    #     utils.clean_bumps()
+    #     st.write(dados.resultado)
 
