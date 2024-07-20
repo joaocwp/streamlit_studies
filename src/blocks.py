@@ -48,9 +48,7 @@ def saida_func(self):
 
 def create_df_block(name='Input'):
     block = Block(name=name.replace('.','_'))
-    # breakpoint()    
     dataframe = session.dados
-    print('colums:', dataframe.columns)
     for col in dataframe:
         block.add_output(name=col, value=dataframe[col])
     block.add_compute(df_block_func)
@@ -87,6 +85,7 @@ def entrada_block_func(self):
     entrada = self.get_interface(name='entrada')
     self.set_interface(name='saida', value=entrada)
     print('nome:', nome, 'valor:', entrada)
+
 
 def df_block_func(self):
     return

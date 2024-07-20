@@ -52,7 +52,6 @@ def st_barfi(base_blocks: Union[List[Block], Dict],
                   key=None,
                    run=False):
     if load_schema:
-        print('loading schema')
         editor_schema = load_schema_name(load_schema)
     else:
         editor_schema = None
@@ -83,7 +82,6 @@ def st_barfi(base_blocks: Union[List[Block], Dict],
     else:
         raise TypeError(
             'Invalid type for base_blocks passed to the st_barfi component.')
-    # print('schema:'schema)
     _from_client = _component_func(base_blocks=base_blocks_data, load_editor_schema=editor_schema,
                                    load_schema_names=schema_names_in_db, load_schema_name=load_schema,
                                    editor_setting=editor_setting,
@@ -96,9 +94,7 @@ def st_barfi(base_blocks: Union[List[Block], Dict],
         pass
 
     if _from_client['command'] == 'execute':
-        print('running compute engine inside client')
         if compute_engine:
-            print('ce state:', _from_client['editor_state'])
             _ce = ComputeEngine(blocks=base_blocks_list)
             _ce.add_editor_state(_from_client['editor_state'])
             _ce._map_block_link()
@@ -112,9 +108,7 @@ def st_barfi(base_blocks: Union[List[Block], Dict],
             return _from_client
         
     if run:
-        print('running compute engine outside client')
         if compute_engine:
-            print('ce state:', editor_schema)
             _ce = ComputeEngine(blocks=base_blocks_list)
             _ce.add_editor_state(editor_schema)
             _ce._map_block_link()
@@ -128,7 +122,6 @@ def st_barfi(base_blocks: Union[List[Block], Dict],
             return _from_client
 
     if _from_client['command'] == 'save':
-        print('saving')
         save_schema(
             schema_name=_from_client['schema_name'], schema_data=_from_client['editor_state'])
 
