@@ -46,8 +46,10 @@ else:
 # "name" argument without having it get recreated.
 
 class StBarfi:
-    def __init__(self, base_blocks: Union[List[Block], Dict], load_schema: str = None,
-              compute_engine: bool = True, key=None):
+    def __init__(self, compute_engine: bool = True,
+                  key=None,
+                  base_blocks=None,
+                  load_schema: str = None):
         print('starting barfi')
         self.key = key
         self.compute_engine = compute_engine
@@ -64,9 +66,8 @@ class StBarfi:
 
         self.schema_names_in_db = schema_names_in_db
 
-        editor_setting = {'compute_engine': compute_engine}
+        editor_setting = {'compute_engine': self.compute_engine}
         self.editor_setting = editor_setting
-
         if isinstance(base_blocks, List):
             base_blocks_data = [block._export() for block in base_blocks]
             base_blocks_list = base_blocks
@@ -95,6 +96,9 @@ class StBarfi:
                                             load_schema_name=self.load_schema,
                                             editor_setting=self.editor_setting,
                                             key=self.key, default={'command': 'skip', 'editor_state': {}})
+        if self._from_client['command'] == 'execute':
+            self.run_barfi()
+
 
     def run_barfi(self, run: bool = False):
         print('Running barfi class')

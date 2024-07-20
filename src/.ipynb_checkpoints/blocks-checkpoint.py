@@ -3,6 +3,7 @@ import streamlit as st
 from streamlit import session_state as session
 # import utils
 
+dados = session.dados
 print("import blocks")
 
 
@@ -12,9 +13,7 @@ def init():
     session.blocks = []
     constant_block()
     saida_block()
-    create_df_block()
-    sum_block()
-    entrada_block()
+    # create_df_block()
     # result_block()
     # sum_block()
     # bump_block()
@@ -33,63 +32,37 @@ def constant_func(self):
     session.constante = valor
     self.set_interface(name='saida', value=valor)
 
-
 def saida_block():
     block = Block(name='saida')
     block.add_input(name='saida')
     block.add_compute(saida_func)
     session.blocks.append(block)
 
-
 def saida_func(self):
     valor = self.get_interface(name='saida')
     session.saida = valor
 
 
-def create_df_block(name='Input'):
-    block = Block(name=name.replace('.','_'))
-    # breakpoint()    
-    dataframe = session.dados
-    print('colums:', dataframe.columns)
-    for col in dataframe:
-        block.add_output(name=col, value=dataframe[col])
-    block.add_compute(df_block_func)
-    session.blocks.append(block)
+# def create_df_block(name='Input'):
+#     block = Block(name=name.replace('.','_'))
+#     dataframe = dados.dados
+#     print('colums:', dataframe.columns)
+#     for col in dataframe:
+#         print(col)
+#         block.add_output(name=col, value={'dataset': dataframe, 'column':col, 'value':dataframe[col]})
+#     block.add_compute(df_block_func)
+#     global blocks
+#     session.blocks.append(block)
 
 
-def sum_block():
-    block = Block(name='Soma')
-    block.add_input(name='valor 1')
-    block.add_input(name='valor 2')
-    block.add_output(name='saida')
-    block.add_compute(sum_block_func)
-    session.blocks.append(block)
-
-
-def sum_block_func(self):
-    val1 = self.get_interface(name='valor 1')
-    val2 = self.get_interface(name='valor 2')
-    result = val1 + val2
-    print("Resultado:", result)
-    self.set_interface(name='saida', value=result)
-
-
-def entrada_block():
-    block = Block(name='entrada')
-    block.add_input(name='entrada', value=1)
-    block.add_output(name='saida')
-    block.add_compute(entrada_block_func)
-    session.blocks.append(block)
-
-
-def entrada_block_func(self):
-    nome = self._name
-    entrada = self.get_interface(name='entrada')
-    self.set_interface(name='saida', value=entrada)
-    print('nome:', nome, 'valor:', entrada)
-
-def df_block_func(self):
-    return
+# def df_block_func(self):
+#     # breakpoint()
+#     cols = [i for i in self._outputs]
+#     for col in cols:#dados.dados:
+#         try:
+#             self.set_interface(name=col, value={'dataset':dados.dados, 'column':col, 'value':dados.dados[col]})
+#         except:
+#             print('Could not set interface for ', col)
 
 
 # def result_block_func(self):

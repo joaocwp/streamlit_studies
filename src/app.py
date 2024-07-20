@@ -1,7 +1,6 @@
 import streamlit as st
 import aba_barfi as aba_barfi
-import utils
-import blocks
+from streamlit import session_state as session
 
 def run():
     tab_barfi, tab_loop, tab_cache = st.tabs(['barfi', 'loop', 'cache'])
@@ -14,8 +13,6 @@ def run():
     
 
     with tab_barfi:
-        blocks.init()
-        utils.upload_file()
         aba_barfi.run()
 
 if __name__ == '__main__':

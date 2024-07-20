@@ -83,54 +83,36 @@ def st_barfi(base_blocks: Union[List[Block], Dict],
     else:
         raise TypeError(
             'Invalid type for base_blocks passed to the st_barfi component.')
-    # print('schema:'schema)
+    print('schema:')
+    print(editor_schema)
     _from_client = _component_func(base_blocks=base_blocks_data, load_editor_schema=editor_schema,
                                    load_schema_names=schema_names_in_db, load_schema_name=load_schema,
                                    editor_setting=editor_setting,
                                    key=key, default={'command': 'skip', 'editor_state': {}})
-    
-    if _from_client['command'] == 'load':
-        load_schema = load_schema
+
+    if _from_client['command'] == 'execute' or run:
+        print('running compute engine')
+        if compute_engine:
+            _ce = ComputeEngine(blocks=base_blocks_list)
+            _ce.add_editor_state(_from_client['editor_state'])
+            _ce._map_block_link()
+            _ce._execute_compute()
+            return _ce.get_result()
+        else:
+            _ce = ComputeEngine(blocks=base_blocks_list)
+            _ce.add_editor_state(_from_client['editor_state'])
+            _ce._map_block_link()
+            # return _ce.get_result()
+            return _from_client
+    if _from_client['command'] == 'save':
+        save_schema(
+            schema_name=_from_client['schema_name'], schema_data=_from_client['editor_state'])
+    if run: #_from_client['command'] == 'load':
+        print('loading schema')
+        load_schema = _from_client['schema_name']
         editor_schema = load_schema_name(load_schema)
     else:
         pass
-
-    if _from_client['command'] == 'execute':
-        print('running compute engine inside client')
-        if compute_engine:
-            print('ce state:', _from_client['editor_state'])
-            _ce = ComputeEngine(blocks=base_blocks_list)
-            _ce.add_editor_state(_from_client['editor_state'])
-            _ce._map_block_link()
-            _ce._execute_compute()
-            return _ce.get_result()
-        else:
-            _ce = ComputeEngine(blocks=base_blocks_list)
-            _ce.add_editor_state(_from_client['editor_state'])
-            _ce._map_block_link()
-            # return _ce.get_result()
-            return _from_client
-        
-    if run:
-        print('running compute engine outside client')
-        if compute_engine:
-            print('ce state:', editor_schema)
-            _ce = ComputeEngine(blocks=base_blocks_list)
-            _ce.add_editor_state(editor_schema)
-            _ce._map_block_link()
-            _ce._execute_compute()
-            return _ce.get_result()
-        else:
-            _ce = ComputeEngine(blocks=base_blocks_list)
-            _ce.add_editor_state(editor_schema)
-            _ce._map_block_link()
-            # return _ce.get_result()
-            return _from_client
-
-    if _from_client['command'] == 'save':
-        print('saving')
-        save_schema(
-            schema_name=_from_client['schema_name'], schema_data=_from_client['editor_state'])
 
     return {}
 
