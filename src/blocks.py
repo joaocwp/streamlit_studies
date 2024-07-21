@@ -19,6 +19,7 @@ def init():
     mult_block()
     minus_block()
     print_block()
+    dummy_block()
     # result_block()
     # sum_block()
     # bump_block()
@@ -32,6 +33,21 @@ def constant_block():
 
 
 def constant_func(self):
+    nome = self._name
+    valor = self.get_option(name='valor')
+    session.constante = valor
+    self.set_interface(name='saida', value=valor)
+
+
+def dummy_block():
+    block = Block(name='dummy')
+    block.add_option(name='valor', type='number', value=1)
+    block.add_output(name='saida')
+    block.add_compute(dummy_func)
+    session.blocks.append(block)
+
+
+def dummy_func(self):
     nome = self._name
     valor = self.get_option(name='valor')
     session.constante = valor

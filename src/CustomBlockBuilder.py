@@ -59,7 +59,7 @@ def encode_entradas_to_const(entra, val_dict, custom_name):
     for entrada in aux:
         name = entrada['name']
         if name in val_dict:
-            entrada['type'] = 'constante'
+            entrada['type'] = 'dummy'
             entrada['options'] = [['valor', val_dict[name]]]
             tmp = get_dict_from_interfaces(entrada['interfaces'])
             del tmp['entrada']
