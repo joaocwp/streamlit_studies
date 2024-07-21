@@ -18,7 +18,7 @@ utils.upload_file()
 blocks.init()
 schemas = barfi_schemas()
 custom_block_schemas = st.multiselect("select schemas for custom block building", schemas)
-custom_block_schemas = 'entradas'
+custom_block_schemas = ['entradas', 'custom']
 file = joblib.load('schemas.barfi')
 fluxos = {i:file[i] for i in file if i in custom_block_schemas}
 CustomBlockBuilder.init(fluxos)

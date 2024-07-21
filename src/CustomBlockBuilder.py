@@ -54,7 +54,7 @@ def get_ids_from_conn(connections, to_ids):
     return entry_dict
 
 
-def encode_entradas_to_const(entra, val_dict):
+def encode_entradas_to_const(entra, val_dict, custom_name):
     aux = entra['nodes'].copy()
     for entrada in aux:
         name = entrada['name']
@@ -65,6 +65,8 @@ def encode_entradas_to_const(entra, val_dict):
             del tmp['entrada']
             encoded_interface = encode_dict_to_interface(tmp)
             entrada['interfaces'] = encoded_interface
+    for block in aux:
+        block['name'] = block['name'] + f'_{custom_name}'
 
 
 def get_to_dict_from_conn(connection):
@@ -91,7 +93,7 @@ def get_entradas(fluxo):
     return entradas
 
 
-def get_fluxo_const(fluxo, val_dict):
+def get_fluxo_const(fluxo, val_dict, nome_custom):
     aux_fluxo = deepcopy(fluxo)
     saidas = [i for i in aux_fluxo['nodes'] if i['type'] == 'saida']
     saida_names = [i['name'] for i in saidas]
@@ -101,7 +103,7 @@ def get_fluxo_const(fluxo, val_dict):
     entry_conn = get_ids_from_conn(aux_fluxo['connections'], ids_entradas)
     tmp = delete_connections(aux_fluxo, ids_entradas)
     aux_fluxo['connections'] = encode_conn_from_dict(tmp)
-    encode_entradas_to_const(aux_fluxo, val_dict)
+    encode_entradas_to_const(aux_fluxo, val_dict, nome_custom)
     return aux_fluxo, entrada_names, saida_names
 
 
@@ -110,7 +112,7 @@ def custom_block(nome_fluxo):
     print("Criando custom:", nome_fluxo)
     fluxo = session['fluxos_custom_blocks'][nome_fluxo]
     block = Block(name=nome_fluxo)
-    __, entrada_names, saida_names = get_fluxo_const(fluxo, {})
+    __, entrada_names, saida_names = get_fluxo_const(fluxo, {}, '')
     for entrada in entrada_names:
         block.add_input(name=entrada)
     for saida in saida_names:
@@ -121,10 +123,14 @@ def custom_block(nome_fluxo):
 
 def custom_block_func(self):
     nome_fluxo = self._type
+    nome_bloco = self._name
     print("Executando custom:", nome_fluxo)
     fluxo = session['fluxos_custom_blocks'][nome_fluxo]
     val_dict = {}
     for entrada in self._inputs:
         val_dict[entrada] = self.get_interface(name=entrada)
-    fluxo_encodado, __, __ = get_fluxo_const(fluxo, val_dict)
-    get_execution(fluxo_encodado)
+    fluxo_encodado, __, __ = get_fluxo_const(fluxo, val_dict, nome_bloco)
+    get_execution(fluxo_encodado, nome_bloco)
+    for saida in self._outputs:
+        val = session['saida_dict'][f'{saida}_{nome_bloco}']
+        self.set_interface(name=saida, value=val)

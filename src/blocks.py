@@ -15,13 +15,17 @@ def init():
     create_df_block()
     sum_block()
     entrada_block()
+    div_block()
+    mult_block()
+    minus_block()
+    print_block()
     # result_block()
     # sum_block()
     # bump_block()
 
 def constant_block():
     block = Block(name='constante')
-    block.add_option(name='valor', type='integer', value=1)
+    block.add_option(name='valor', type='number', value=1)
     block.add_output(name='saida')
     block.add_compute(constant_func)
     session.blocks.append(block)
@@ -36,13 +40,33 @@ def constant_func(self):
 
 def saida_block():
     block = Block(name='saida')
-    block.add_input(name='saida')
+    block.add_input(name='valor')
+    block.add_output(name='saida')
     block.add_compute(saida_func)
     session.blocks.append(block)
 
 
 def saida_func(self):
-    valor = self.get_interface(name='saida')
+    if 'saida_dict' not in session:
+        session.saida_dict = {}
+    valor = self.get_interface(name='valor')
+    self.set_interface(name='saida', value=valor)
+    session['saida_dict'][self._name] = valor
+    print('Saida', self._name, ':', valor)
+
+
+def print_block():
+    block = Block(name='print')
+    block.add_input(name='valor')
+    block.add_output(name='saida')
+    block.add_compute(print_func)
+    session.blocks.append(block)
+
+
+def print_func(self):
+    valor = self.get_interface(name='valor')
+    self.set_interface(name='saida', value=valor)
+    print('Saida', self._name, ':', valor)
     session.saida = valor
 
 
@@ -68,7 +92,57 @@ def sum_block_func(self):
     val1 = self.get_interface(name='valor 1')
     val2 = self.get_interface(name='valor 2')
     result = val1 + val2
-    print("Resultado:", result)
+    print("soma:", result)
+    self.set_interface(name='saida', value=result)
+
+
+def minus_block():
+    block = Block(name='Subtracao')
+    block.add_input(name='valor 1')
+    block.add_input(name='valor 2')
+    block.add_output(name='saida')
+    block.add_compute(mins_block_func)
+    session.blocks.append(block)
+
+
+def mins_block_func(self):
+    val1 = self.get_interface(name='valor 1')
+    val2 = self.get_interface(name='valor 2')
+    result = val1 - val2
+    self.set_interface(name='saida', value=result)
+
+
+def div_block():
+    block = Block(name='Divisao')
+    block.add_input(name='valor 1')
+    block.add_input(name='valor 2')
+    block.add_output(name='saida')
+    block.add_compute(div_block_func)
+    session.blocks.append(block)
+
+
+def div_block_func(self):
+    val1 = self.get_interface(name='valor 1')
+    val2 = self.get_interface(name='valor 2')
+    result = val1 / val2
+    print("div:", result)
+    self.set_interface(name='saida', value=result)
+
+
+def mult_block():
+    block = Block(name='Multiplicacao')
+    block.add_input(name='valor 1')
+    block.add_input(name='valor 2')
+    block.add_output(name='saida')
+    block.add_compute(mult_block_func)
+    session.blocks.append(block)
+
+
+def mult_block_func(self):
+    val1 = self.get_interface(name='valor 1')
+    val2 = self.get_interface(name='valor 2')
+    result = val1 * val2
+    print("mult:", result)
     self.set_interface(name='saida', value=result)
 
 
@@ -84,85 +158,7 @@ def entrada_block_func(self):
     nome = self._name
     entrada = self.get_interface(name='entrada')
     self.set_interface(name='saida', value=entrada)
-    print('nome:', nome, 'valor:', entrada)
 
 
 def df_block_func(self):
     return
-
-
-# def result_block_func(self):
-#     dataset = self.get_interface(name='result')['dataset']
-#     dados.resultado = dataset
-
-
-# def result_block():
-#     block = Block(name='result')
-#     block.add_input(name='result')
-#     block.add_compute(result_block_func)
-#     session.blocks.append(block)
-
-
-# def sum_func(self):
-#     nome_saida = self._name
-#     dataset = self.get_interface(name='col1')['dataset']
-#     col1 = self.get_interface(name='col1')['column']
-#     col2 = self.get_interface(name='col2')['column']
-#     dataset[nome_saida] = dataset[col1] + dataset[col2]
-#     self.set_interface(name='result', value={'dataset': dataset,
-#                                             'column':nome_saida,
-#                                             'value':dataset[nome_saida]})
-
-
-# def sum_block():
-#     sum_block = Block(name='Soma')
-#     sum_block.add_input(name='col1')
-#     sum_block.add_input(name='col2')
-#     sum_block.add_output(name='result')
-#     sum_block.add_compute(sum_func)
-#     session.blocks.append(sum_block)
-
-
-# def bump_block():
-#     if 'bump_dict' not in session:
-#         session['bump_dict'] = {}
-#     block = Block(name='Bump')
-#     block.add_input(name='bump col')
-#     block.add_input(name='mtm col')
-#     block.add_option(name='valor', type='number', value=0.1)
-#     block.add_option(name='ordem', type='integer', value=1)
-#     block.add_compute(bump_block_func)
-#     session.blocks.append(block)
-
-
-# def bump_block_func(self):
-#     nome_saida = self._name
-#     bump_col = self.get_interface(name='bump col')['column']
-#     mtm_col = self.get_interface(name='mtm col')['column']
-#     dataset = self.get_interface(name='bump col')['dataset']
-#     value = self.get_option(name='valor')
-#     value = float(value)
-#     order = self.get_option(name='ordem')
-#     order = int(order)
-
-#     if 'order_of_bumping' not in session:
-#         session['order_of_bumping'] = 1
-
-#     bump_name = f'bump_{nome_saida}'
-#     # breakpoint()
-#     if bump_name not in session['bump_dict']:
-#         print('=======cache para bump:', bump_col)
-#         session['bump_dict'][bump_name] = {'bump_column': bump_col,
-#                                             'bump_value': value,
-#                                             'mtm_column': mtm_col,
-#                                             'mtm_orig': dataset[mtm_col],
-#                                             'status': False,
-#                                             'mtm_bumped': "Not bumped",
-#                                             'order': order}
-#         # st.rerun()
-    
-
-#     if session['bump_dict'][bump_name]['status']:
-#         print('===========compiling bump result for', bump_name)
-#         utils.compile_bumps(bump_names=[bump_name])
-    
