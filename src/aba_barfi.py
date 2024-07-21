@@ -6,10 +6,10 @@ import utils
 import blocks
 import joblib
 import CustomBlockBuilder
+from copy import deepcopy
 
 if 'blocks' in session:
     del session.blocks
-
 
 
 print("========================Setup==========================")
@@ -32,3 +32,7 @@ st_barfi(compute_engine=True, key='barfi',
 if 'saida' in session:
     st.write(session.saida)
 
+if st.button("Save session"):
+    aux = deepcopy(dict(session))
+    del aux['blocks']
+    joblib.dump(aux, 'session_state.pkl')
