@@ -43,7 +43,7 @@ def test_get_addition():
     mock = MagicMock()
     mock.session_state = {'config':{'bump1':{'order':1},
                           'bump2':{'order':3},}}
-    mock.cache_data.return_value = lambda x: x #Aqui é necessário
+    mock.cache_data.return_value = lambda x: x #Aqui é necessário p/ testar funcao com cache
     with patch.dict('sys.modules', {'streamlit': mock,
                                     'math_util': mock,
                                     'beholder':mock}):
@@ -52,6 +52,30 @@ def test_get_addition():
         mock.add.return_value = 2
         assert get_addition() == 2
         mock.add.assert_called()
+
+
+mock = MagicMock()
+mock.cache_data.return_value = lambda x: x
+mock.multiply.return_value = 1
+@patch.dict('sys.modules', {'streamlit':mock,
+                            'math_util':mock,
+                            'beholder':mock})
+def test_get_multiplication():
+    from src.utils import get_multiplication
+    assert get_multiplication() == 1
+    # mock.multiply.assert_called() #não funciona, não tem acesso ao obj mock
+
+def test_get_multiplication2():
+    mock = MagicMock()
+    mock.multiply.return_value = 1
+    mock.cache_data.return_value = lambda x: x
+    with patch.dict('sys.modules', {'streamlit':mock,
+                                    'math_util':mock,
+                                    'beholder':mock}):
+        from src.utils import get_multiplication
+        assert get_multiplication() == 1
+        mock.multiply.assert_called()
+
 
 
 mock = MagicMock()    
@@ -65,11 +89,11 @@ class TestMath(unittest.TestCase):
         assert get_subtraction() == 0
         mock.subtract.assert_called()
 
-    def test_get_multiplication(self):
-        from src.utils import get_multiplication
-        mock.multiply.return_value = 1
-        assert get_multiplication() == 1
-        mock.multiply.assert_called()   
+    # def test_get_multiplication(self):
+    #     from src.utils import get_multiplication
+    #     mock.multiply.return_value = 1
+    #     assert get_multiplication() == 1
+    #     mock.multiply.assert_called()   
 
 @patch.dict('sys.modules', {'beholder': MagicMock()})
 class TestMath2(unittest.TestCase):

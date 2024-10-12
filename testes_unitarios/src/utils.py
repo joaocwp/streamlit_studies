@@ -25,5 +25,6 @@ def get_addition(a=1, b=2):
 def get_subtraction():
     return math_util.subtract(1, 2)
 
+@st.cache_data()
 def get_multiplication():
     return math_util.multiply(1, 2)
