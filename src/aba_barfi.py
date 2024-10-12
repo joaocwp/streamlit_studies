@@ -15,13 +15,15 @@ if 'blocks' in session:
 print("========================Setup==========================")
 utils.init()
 utils.upload_file()
+utils.upload_code()
 blocks.init()
+utils.import_blocks()
 schemas = barfi_schemas()
-custom_block_schemas = st.multiselect("select schemas for custom block building", schemas)
-custom_block_schemas = ['entradas', 'custom']
-file = joblib.load('schemas.barfi')
-fluxos = {i:file[i] for i in file if i in custom_block_schemas}
-CustomBlockBuilder.init(fluxos)
+# custom_block_schemas = st.multiselect("select schemas for custom block building", schemas)
+# custom_block_schemas = ['entradas', 'custom']
+# file = joblib.load('schemas.barfi')
+# fluxos = {i:file[i] for i in file if i in custom_block_schemas}
+# CustomBlockBuilder.init(fluxos)
 barfi_schema_name = st.selectbox('Select a saved schema to load:', schemas)
 # if barfi_schema_name is None:
 #     barfi_schema_name = 'teste'
