@@ -10,20 +10,20 @@ print('import utils')
 def init():
     print('init dados')
     if 'dados' not in session:
-        session.dados = pd.DataFrame()
+        session['dados'] = pd.DataFrame()
 
 def click():
-    session.upload_btn_click = True
+    session['upload_btn_click'] = True
 
 def upload_file():
     if 'upload_btn_click' not in session:
-        session.upload_btn_click = False
+        session['upload_btn_click'] = False
 
     uploaded_file = st.file_uploader("Choose a file", key='upload_file')
     if st.button('Upload'):
         print('uploading')
         df = pd.read_csv(uploaded_file)
-        session.dados = df.copy()
+        session['dados'] = df.copy()
 
 def upload_code():
     uploaded_code = st.file_uploader("Choose a code", key='upload_code')
@@ -39,6 +39,6 @@ def import_blocks():
             print("Buscando blocos")
             reload(tmp)
             block = eval(f'tmp.{file}.init()')
-            session.blocks.append(block)
+            session['blocks'].append(block)
         except Exception as e:
             print('erro:',e)

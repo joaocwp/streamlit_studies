@@ -9,7 +9,7 @@ print("import blocks")
 def init():
 
     print('starting blocks')
-    session.blocks = []
+    session['blocks'] = []
     constant_block()
     saida_block()
     create_df_block()
@@ -29,13 +29,13 @@ def constant_block():
     block.add_option(name='valor', type='number', value=1)
     block.add_output(name='saida')
     block.add_compute(constant_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def constant_func(self):
     nome = self._name
     valor = self.get_option(name='valor')
-    session.constante = valor
+    session['constante'] = valor
     self.set_interface(name='saida', value=valor)
 
 
@@ -44,13 +44,13 @@ def dummy_block():
     block.add_option(name='valor', type='number', value=1)
     block.add_output(name='saida')
     block.add_compute(dummy_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def dummy_func(self):
     nome = self._name
     valor = self.get_option(name='valor')
-    session.constante = valor
+    session['constante'] = valor
     self.set_interface(name='saida', value=valor)
 
 
@@ -59,12 +59,12 @@ def saida_block():
     block.add_input(name='valor')
     block.add_output(name='saida')
     block.add_compute(saida_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def saida_func(self):
     if 'saida_dict' not in session:
-        session.saida_dict = {}
+        session['saida_dict'] = {}
     valor = self.get_interface(name='valor')
     self.set_interface(name='saida', value=valor)
     session['saida_dict'][self._name] = valor
@@ -76,23 +76,24 @@ def print_block():
     block.add_input(name='valor')
     block.add_output(name='saida')
     block.add_compute(print_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def print_func(self):
     valor = self.get_interface(name='valor')
     self.set_interface(name='saida', value=valor)
     print('Saida', self._name, ':', valor)
-    session.saida = valor
+    session['saida'] = valor
 
 
 def create_df_block(name='Input'):
-    block = Block(name=name.replace('.','_'))
-    dataframe = session.dados
-    for col in dataframe:
-        block.add_output(name=col, value=dataframe[col])
-    block.add_compute(df_block_func)
-    session.blocks.append(block)
+    if 'dados' in session:
+        block = Block(name=name.replace('.','_'))
+        dataframe = session['dados']
+        for col in dataframe:
+            block.add_output(name=col, value=dataframe[col])
+        block.add_compute(df_block_func)
+        session['blocks'].append(block)
 
 
 def sum_block():
@@ -101,7 +102,7 @@ def sum_block():
     block.add_input(name='valor 2')
     block.add_output(name='saida')
     block.add_compute(sum_block_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def sum_block_func(self):
@@ -118,7 +119,7 @@ def minus_block():
     block.add_input(name='valor 2')
     block.add_output(name='saida')
     block.add_compute(mins_block_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def mins_block_func(self):
@@ -134,7 +135,7 @@ def div_block():
     block.add_input(name='valor 2')
     block.add_output(name='saida')
     block.add_compute(div_block_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def div_block_func(self):
@@ -151,7 +152,7 @@ def mult_block():
     block.add_input(name='valor 2')
     block.add_output(name='saida')
     block.add_compute(mult_block_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def mult_block_func(self):
@@ -167,7 +168,7 @@ def entrada_block():
     block.add_input(name='entrada', value=1)
     block.add_output(name='saida')
     block.add_compute(entrada_block_func)
-    session.blocks.append(block)
+    session['blocks'].append(block)
 
 
 def entrada_block_func(self):

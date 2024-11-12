@@ -7,6 +7,8 @@ import blocks
 import joblib
 import CustomBlockBuilder
 from copy import deepcopy
+import pathlib
+
 
 if 'blocks' in session:
     del session.blocks
@@ -37,4 +39,14 @@ if 'saida' in session:
 if st.button("Save session"):
     aux = deepcopy(dict(session))
     del aux['blocks']
-    joblib.dump(aux, 'session_state.pkl')
+    file = joblib.load('schemas.barfi')
+    fluxo = file[barfi_schema_name]
+    config = {'session': aux, 'fluxo': fluxo}
+    joblib.dump(config, f'config.json')
+
+if st.button('Get results'):
+    result_dict = joblib.load('resultado.json')
+    st.write(f"Resultado: {result_dict['saida']}")
+    print("Limpando resultado...")
+    tmp_rem = pathlib.Path('resultado.json')
+    tmp_rem.unlink()
