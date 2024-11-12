@@ -6,6 +6,7 @@ import utils
 from copy import deepcopy
 import time
 import pathlib
+from glob import glob
 
 
 #Se executando em backend real, precisamos re-inicializar os blocos
@@ -20,19 +21,30 @@ def init_session(session_dict):
     for key in session_dict:
         session[key] = deepcopy(session_dict[key])
 
-def save_results(session_dict):
+def save_results(session_dict, resname):
     aux = deepcopy(session_dict)
     del aux['blocks']
-    joblib.dump(aux, 'resultado.json')
+    joblib.dump(aux.to_dict(), f'{resname}.result.json')
 
 while True:
     config = None
-    try:
-        config = joblib.load('config.json')
-    except:
-        time.sleep(1)
+    print("buscando config...")
+    files = glob('*.configjson')
+    if len(files) > 0:
+        try:
+            filename = files[0]
+            print("Lendo config...")
+            config = joblib.load(filename)
+        except:
+            pass
+    else:
+        time.sleep(10)
     
     if config is not None:
+        print('limpando config...')
+        tmp_rem = pathlib.Path(files[0])
+        tmp_rem.unlink()
+        print(f'configjson deletado')
         fluxo = config['fluxo']
         init_session(config['session'])
         # session = deepcopy(config['session'])
@@ -41,8 +53,5 @@ while True:
         utils.import_blocks()
         get_execution(fluxo, session['blocks'])
         print(f'fluxo executado. Salvando resultados...')
-        save_results(session)
-        print('limpando config...')
-        tmp_rem = pathlib.Path('config.json')
-        tmp_rem.unlink()
-        print(f'config.json deletado')
+        resname = files[0].split('.')[0]
+        save_results(session, resname)

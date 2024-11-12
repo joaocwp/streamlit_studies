@@ -8,6 +8,8 @@ import joblib
 import CustomBlockBuilder
 from copy import deepcopy
 import pathlib
+from datetime import datetime
+import time
 
 
 if 'blocks' in session:
@@ -42,11 +44,26 @@ if st.button("Save session"):
     file = joblib.load('schemas.barfi')
     fluxo = file[barfi_schema_name]
     config = {'session': aux, 'fluxo': fluxo}
-    joblib.dump(config, f'config.json')
+    timestamp = datetime.now().strftime('%s')
+    session['wkp'] = 'wkp'
+    session['ts'] = timestamp
+    joblib.dump(config, f'{session["wkp"]}_{timestamp}.configjson')
 
 if st.button('Get results'):
-    result_dict = joblib.load('resultado.json')
-    st.write(f"Resultado: {result_dict['saida']}")
-    print("Limpando resultado...")
-    tmp_rem = pathlib.Path('resultado.json')
-    tmp_rem.unlink()
+    processed = False
+    c = 0
+    with st.spinner(f"Waiting for results..."):
+        while not processed and c < 30:
+            try:
+                print("Lendo:", f"{session['wkp']}_{session['ts']}.result.json")
+                result_dict = joblib.load(f"{session['wkp']}_{session['ts']}.result.json")
+                st.write(f"Resultado: {result_dict['saida']}")
+                print("Limpando resultado...")
+                tmp_rem = pathlib.Path(f"{session['wkp']}_{session['ts']}.result.json")
+                tmp_rem.unlink()
+                processed = True
+            except Exception as e:
+                print(e)
+                c += 1
+                print('Aguardando:', c)
+                time.sleep(1)
